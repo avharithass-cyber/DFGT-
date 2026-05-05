@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DFGT Feature Fusion Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body {
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+  text-align: center;
+}
+.container {
+  width: 90%;
+  margin: auto;
+}
+.card {
+  background: #1e293b;
+  padding: 20px;
+  margin: 10px;
+  border-radius: 10px;
+}
+h1 {
+  color: #38bdf8;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 10px;
+  border-bottom: 1px solid #334155;
+}
+.best {
+  background: #16a34a;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>DFGT Feature Fusion Dashboard</h1>
+
+<div class="card">
+<h2>Feature Accuracy Table</h2>
+<table id="dataTable">
+<thead>
+<tr>
+<th>Feature</th>
+<th>Accuracy</th>
+<th>Precision</th>
+<th>Recall</th>
+<th>F1 Score</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+
+<div class="card">
+<h2>Accuracy Chart</h2>
+<canvas id="chart"></canvas>
+</div>
+
+</div>
+
+<script>
+
+// Mock data (based on paper peak ~98.5%)
+const data = [
+  {name: "F1 (Appearance)", acc: 82, p: 80, r: 78, f1: 79},
+  {name: "F2 (Vascular)", acc: 85, p: 83, r: 82, f1: 82},
+  {name: "F3 (Geometry)", acc: 87, p: 85, r: 84, f1: 84},
+  {name: "F4 (Texture)", acc: 89, p: 88, r: 87, f1: 87},
+
+  {name: "F1+F2", acc: 91, p: 90, r: 89, f1: 89},
+  {name: "F1+F3", acc: 92, p: 91, r: 90, f1: 90},
+  {name: "F2+F3", acc: 93, p: 92, r: 91, f1: 91},
+
+  {name: "F1+F2+F3", acc: 96, p: 95, r: 95, f1: 95},
+  {name: "F1+F2+F4", acc: 97, p: 96, r: 96, f1: 96},
+
+  {name: "F1+F2+F3+F4 (Fusion)", acc: 98.5, p: 98, r: 98, f1: 98}
+];
+
+// Fill table
+const table = document.querySelector("#dataTable tbody");
+let maxAcc = Math.max(...data.map(d => d.acc));
+
+data.forEach(d => {
+  let row = `<tr class="${d.acc === maxAcc ? 'best' : ''}">
+    <td>${d.name}</td>
+    <td>${d.acc}%</td>
+    <td>${d.p}%</td>
+    <td>${d.r}%</td>
+    <td>${d.f1}%</td>
+  </tr>`;
+  table.innerHTML += row;
+});
+
+// Chart
+const ctx = document.getElementById('chart');
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: data.map(d => d.name),
+    datasets: [{
+      label: 'Accuracy',
+      data: data.map(d => d.acc)
+    }]
+  },
+  options: {
+    plugins: {
+      legend: { labels: { color: "white" } }
+    },
+    scales: {
+      x: { ticks: { color: "white" } },
+      y: { ticks: { color: "white" } }
+    }
+  }
+});
+
+</script>
+
+</body>
+</html>

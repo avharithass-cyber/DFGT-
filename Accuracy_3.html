@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<title>DFGT Interactive AI Demo</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body { font-family: Arial; background:#0f172a; color:white; }
+.container { width:95%; margin:auto; }
+h1 { text-align:center; color:#38bdf8; }
+
+.stage { display:inline-block; background:#1e293b; padding:10px; margin:5px; cursor:pointer; border-radius:8px;}
+.stage:hover { background:#334155; }
+
+.card { background:#1e293b; padding:15px; border-radius:10px; margin:10px 0; }
+
+#preview { max-width:200px; margin-top:10px; border-radius:10px; }
+</style>
+
+</head>
+
+<body>
+<div class="container">
+
+<h1>DFGT AI Dashboard (Interactive)</h1>
+
+<!-- PIPELINE -->
+
+<div>
+<span class="stage" onclick="explain('sensing')">Sensing</span>
+<span class="stage" onclick="explain('cnn')">CNN</span>
+<span class="stage" onclick="explain('fusion')">Fusion</span>
+<span class="stage" onclick="explain('decision')">Decision</span>
+</div>
+
+<div id="info" class="card">Click stage</div>
+
+<!-- IMAGE UPLOAD -->
+
+<div class="card">
+<h3>Upload Tongue Image</h3>
+<input type="file" accept="image/*" onchange="handleImage(event)">
+<br>
+<img id="preview">
+<p id="result"></p>
+</div>
+
+<!-- FEATURE OUTPUT -->
+
+<div class="card">
+<h3>Extracted Features (Simulated)</h3>
+<p id="features"></p>
+</div>
+
+<!-- CHART -->
+
+<div class="card">
+<h3>Accuracy Chart</h3>
+<canvas id="chart"></canvas>
+</div>
+
+</div>
+
+<script>
+
+// -------- EXPLAIN --------
+function explain(step){
+const text={
+sensing:"Image captured (RGB/NIR/Depth simulated).",
+cnn:"CNN extracts F1,F2,F3,F4 features.",
+fusion:"Features combined into one vector.",
+decision:"Final prediction + accuracy score."
+};
+document.getElementById("info").innerText=text[step];
+}
+
+// -------- DATA --------
+let featureData = {
+F1:49, F2:46, F3:60, F4:65, Fusion:98.5
+};
+
+// -------- IMAGE HANDLER --------
+function handleImage(event){
+const file = event.target.files[0];
+const reader = new FileReader();
+
+reader.onload = function(){
+document.getElementById("preview").src = reader.result;
+
+// Simulate feature extraction
+simulateModel();
+};
+reader.readAsDataURL(file);
+}
+
+// -------- SIMULATED MODEL --------
+function simulateModel(){
+
+// Fake extracted features (random variation)
+featureData.F1 = rand(45,55);
+featureData.F2 = rand(40,50);
+featureData.F3 = rand(55,70);
+featureData.F4 = rand(60,75);
+
+// Fusion improves result
+featureData.Fusion = Math.min(98.5, (featureData.F1+featureData.F2+featureData.F3+featureData.F4)/4 + 20);
+
+// Show features
+document.getElementById("features").innerText =
+`F1: ${featureData.F1}% | F2: ${featureData.F2}% | F3: ${featureData.F3}% | F4: ${featureData.F4}%`;
+
+// Final result
+document.getElementById("result").innerHTML =
+`Prediction Confidence: <b>${featureData.Fusion.toFixed(2)}%</b>`;
+
+// Update chart
+updateChart();
+}
+
+// -------- RANDOM --------
+function rand(min,max){
+return Math.floor(Math.random()*(max-min+1))+min;
+}
+
+// -------- CHART --------
+let chart;
+
+function updateChart(){
+
+const labels = ["F1","F2","F3","F4","Fusion"];
+const values = Object.values(featureData);
+
+if(chart) chart.destroy();
+
+chart = new Chart(document.getElementById("chart"),{
+type:"bar",
+data:{ labels:labels, datasets:[{label:"Accuracy %", data:values}] },
+options:{
+plugins:{ legend:{labels:{color:"white"}}},
+scales:{
+x:{ticks:{color:"white"}},
+y:{ticks:{color:"white"}}
+}
+}
+});
+}
+
+</script>
+
+</body>
+</html>

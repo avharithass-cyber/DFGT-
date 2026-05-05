@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DFGT Interactive Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body { font-family: Arial; background:#0f172a; color:white; }
+.container { width:95%; margin:auto; }
+h1 { text-align:center; color:#38bdf8; }
+
+/* Pipeline */
+.pipeline { display:flex; justify-content:space-between; margin:20px 0; }
+.stage {
+  background:#1e293b; padding:10px; border-radius:8px;
+  cursor:pointer; flex:1; margin:5px; text-align:center;
+}
+.stage:hover { background:#334155; }
+#explainBox { background:#111827; padding:15px; border-radius:10px; }
+
+/* Cards */
+.card { background:#1e293b; padding:15px; border-radius:10px; margin:10px 0; }
+
+/* Modalities */
+.modalities { display:flex; justify-content:space-around; margin:15px 0; }
+.mod { background:#020617; padding:10px; border-radius:8px; }
+
+/* Form */
+input { width:60px; margin:5px; }
+
+/* Highlight */
+.best { color:#22c55e; font-weight:bold; }
+</style>
+
+</head>
+
+<body>
+<div class="container">
+
+<h1>DFGT Pipeline + Fusion Dashboard</h1>
+
+<!-- PIPELINE -->
+
+<div class="pipeline">
+<div class="stage" onclick="showExplain('sensing')">Sensing</div>
+<div class="stage" onclick="showExplain('pre')">Preprocessing</div>
+<div class="stage" onclick="showExplain('cnn')">CNN</div>
+<div class="stage" onclick="showExplain('fusion')">Fusion</div>
+<div class="stage" onclick="showExplain('spoof')">Anti-Spoof</div>
+<div class="stage" onclick="showExplain('decision')">Decision</div>
+</div>
+
+<div id="explainBox">Click a stage to see explanation</div>
+
+<!-- MODALITIES -->
+
+<div class="modalities">
+<div class="mod">RGB (Appearance)</div>
+<div class="mod">NIR (Vascular)</div>
+<div class="mod">Depth (Geometry)</div>
+</div>
+
+<!-- CHART -->
+
+<div class="card">
+<h3>Accuracy Comparison</h3>
+<canvas id="chart"></canvas>
+</div>
+
+<!-- FUSION -->
+
+<div class="card">
+<h3>Fusion Progress</h3>
+<canvas id="fusionChart"></canvas>
+</div>
+
+<!-- FORM -->
+
+<div class="card">
+<h3>Update Accuracy Values</h3>
+<div id="form"></div>
+<button onclick="updateData()">Update Charts</button>
+</div>
+
+</div>
+
+<script>
+
+// -------- DATA --------
+let data = {
+F1:49, F2:46, F3:60, F4:65,
+F1F2:70, F1F3:75, F2F3:78,
+F123:90, F124:95,
+FULL:98.5
+};
+
+// -------- PIPELINE TEXT --------
+function showExplain(stage){
+const text = {
+sensing: "Capture tongue using RGB, NIR, Depth sensors.",
+pre: "Normalize images, align, remove noise.",
+cnn: "Extract features using CNN from each modality.",
+fusion: "Combine features (F1,F2,F3,F4) into one vector.",
+spoof: "Detect fake inputs using liveness checks.",
+decision: "Final identity prediction."
+};
+document.getElementById("explainBox").innerText = text[stage];
+}
+
+// -------- CHARTS --------
+let chart, fusionChart;
+
+function createCharts(){
+
+const labels = Object.keys(data);
+const values = Object.values(data);
+
+if(chart) chart.destroy();
+chart = new Chart(document.getElementById('chart'), {
+type:'bar',
+data:{ labels, datasets:[{label:'Accuracy %', data:values}] },
+options:{ plugins:{legend:{labels:{color:'white'}}},
+scales:{x:{ticks:{color:'white'}}, y:{ticks:{color:'white'}}}}
+});
+
+// Fusion chart (progress)
+const fusionLabels = ["F1","F1+F2","F1+F2+F3","FULL"];
+const fusionValues = [data.F1, data.F1F2, data.F123, data.FULL];
+
+if(fusionChart) fusionChart.destroy();
+fusionChart = new Chart(document.getElementById('fusionChart'), {
+type:'line',
+data:{ labels:fusionLabels, datasets:[{label:'Fusion Gain', data:fusionValues}] },
+options:{ plugins:{legend:{labels:{color:'white'}}},
+scales:{x:{ticks:{color:'white'}}, y:{ticks:{color:'white'}}}}
+});
+
+}
+
+// -------- FORM --------
+function createForm(){
+let html="";
+for(let key in data){
+html += `${key}: <input id="${key}" value="${data[key]}"> `;
+}
+document.getElementById("form").innerHTML = html;
+}
+
+function updateData(){
+for(let key in data){
+data[key] = parseFloat(document.getElementById(key).value);
+}
+createCharts();
+}
+
+// INIT
+createForm();
+createCharts();
+
+</script>
+
+</body>
+</html>
